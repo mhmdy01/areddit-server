@@ -83,4 +83,53 @@ postsRouter.put("/:id", async (req, res, next) => {
   res.json(updatedPost);
 });
 
+postsRouter.post("/:id/comments", async (req, res, next) => {
+  const authenticatedUser = req.user;
+  if (!authenticatedUser) {
+    return res.status(401).end();
+  }
+
+  const postFromDb = await Post.findById(req.params.id);
+  if (!postFromDb) {
+    return res.status(404).end();
+  }
+
+  const recievedComment = req.body;
+  const commentToAdd = {
+    content: recievedComment.content,
+    date: new Date(),
+  };
+  postFromDb.comments = postFromDb.comments.concat(commentToAdd);
+  const updatedPost = await postFromDb.save();
+  await updatedPost.populate("user", "username name").execPopulate();
+
+  res.send(updatedPost);
+});
+
+postsRouter.put("/:id/reactions", async (req, res, next) => {
+  const authenticatedUser = req.user;
+  if (!authenticatedUser) {
+    return res.status(401).end();
+  }
+
+  const postFromDb = await Post.findById(req.params.id);
+  if (!postFromDb) {
+    return res.status(404).end();
+  }
+
+  const recievedReactions = req.body;
+  const changedReactions = {
+    thumbsUp: recievedReactions.thumbsUp,
+    hooray: recievedReactions.hooray,
+    heart: recievedReactions.heart,
+    rocket: recievedReactions.rocket,
+    eyes: recievedReactions.eyes,
+  };
+  postFromDb.reactions = changedReactions;
+  const updatedPost = await postFromDb.save();
+  await updatedPost.populate("user", "username name").execPopulate();
+
+  res.send(updatedPost);
+});
+
 module.exports = postsRouter;

@@ -5,6 +5,14 @@ const postSchema = new mongoose.Schema({
   content: { type: String, required: true, minLength: 3 },
   createdAt: { type: Date, required: true },
   lastModified: { type: Date, required: true },
+  comments: [{ content: { type: String, reqired: true }, date: Date }],
+  reactions: {
+    thumbsUp: { type: Number, default: 0 },
+    hooray: { type: Number, default: 0 },
+    heart: { type: Number, default: 0 },
+    rocket: { type: Number, default: 0 },
+    eyes: { type: Number, default: 0 },
+  },
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",

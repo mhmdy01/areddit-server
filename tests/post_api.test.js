@@ -326,6 +326,57 @@ describe("update", () => {
   });
 });
 
+describe("comments", () => {
+  test("correct data: new comment added to post, #comment increased, each comment has conten/date fields", async () => {
+    const postsInDb = await helpers.postsInDb();
+    const postToUpdate = postsInDb[0];
+    const commentToAdd = { content: "this looks cool!" };
+
+    const res = await api
+      .post(`${API_URL}/${postToUpdate.id}/comments`)
+      .set("Authorization", authorization)
+      .send(commentToAdd)
+      .expect(200);
+    const updatedPost = res.body;
+    // console.log(updatedPost);
+
+    expect(updatedPost.comments).toHaveLength(postToUpdate.comments.length + 1);
+    expect(
+      updatedPost.comments[updatedPost.comments.length - 1].content
+    ).toBeDefined();
+    expect(updatedPost.comments[updatedPost.comments.length - 1].content).toBe(
+      commentToAdd.content
+    );
+    expect(
+      updatedPost.comments[updatedPost.comments.length - 1].date
+    ).toBeDefined();
+  });
+});
+
+describe.only("reactions", () => {
+  test("correct data: specific reaction type incremented", async () => {
+    const postsInDb = await helpers.postsInDb();
+    const postToUpdate = postsInDb[0];
+    const changedReactions = {
+      thumbsUp: 10,
+      hooray: 10,
+      heart: 5,
+      rocket: 0,
+      eyes: 7,
+    };
+
+    const res = await api
+      .put(`${API_URL}/${postToUpdate.id}/reactions`)
+      .set("Authorization", authorization)
+      .send(changedReactions)
+      .expect(200);
+    const updatedPost = res.body;
+    // console.log(updatedPost);
+
+    expect(updatedPost.reactions).toEqual(changedReactions);
+  });
+});
+
 afterAll(() => {
   mongoose.connection.close();
 });
